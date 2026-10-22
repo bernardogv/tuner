@@ -1,0 +1,16 @@
+{
+  "schema_version": 3,
+  "notes": "(r) Candidate has all 3 repeats at depth 0 but nothing at 32768 (llama-bench died in the 32k prefill, cf. MiniMax's GPU ring timeout, casebook 2026-10-05-minimax-m27-q3-fit-and-ceiling) and no failure string: fewer than `repeats` samples at a listed depth is a crash, whatever depth 0 says.",
+  "thresholds": { "kld_margin": 0.02, "same_top_margin_pct": 3.0, "control_kld_cap": 0.2, "noise_k": 2.0, "min_samples": 3 },
+  "workload": { "depths": [0, 32768], "objective": { "metric": "pp", "depth": 32768 }, "guard_pct": 15.0 },
+  "repeats": 3,
+  "control": { "mean_kld": 0.035, "same_top_pct": 87.0 },
+  "baseline": { "samples": [
+    {"depth": 0, "pp_tok_s": 1005.08, "tg_tok_s": 54.22}, {"depth": 0, "pp_tok_s": 1014.99, "tg_tok_s": 54.27}, {"depth": 0, "pp_tok_s": 1024.90, "tg_tok_s": 54.32},
+    {"depth": 32768, "pp_tok_s": 333.20, "tg_tok_s": 40.19}, {"depth": 32768, "pp_tok_s": 333.32, "tg_tok_s": 40.81}, {"depth": 32768, "pp_tok_s": 333.44, "tg_tok_s": 41.43}
+  ] },
+  "candidate": { "samples": [
+    {"depth": 0, "pp_tok_s": 1100.0, "tg_tok_s": 58.0}, {"depth": 0, "pp_tok_s": 1105.0, "tg_tok_s": 58.3}, {"depth": 0, "pp_tok_s": 1110.0, "tg_tok_s": 58.6}
+  ], "kld": {"mean_kld": 0.035, "same_top_pct": 87.0}, "failure": null, "identical_to_baseline": false },
+  "expect": { "verdict": "reject", "reason_kind": "crashed" }
+}

@@ -1,0 +1,23 @@
+[package]
+name = "tuner"
+description = "Deterministic llama.cpp config tuner for the homelab boxes (strix first), scored against the roofline"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "tuner"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.9"
+# Expected decode tok/s and % of roofline come from the roofline calculator, not a local copy of the formula.
+roofline = { path = "../../cli" }
+roofline-benchmarks = { path = "../../benchmarks" }
+ctrlc = "3"

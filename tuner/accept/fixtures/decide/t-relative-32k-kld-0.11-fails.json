@@ -1,0 +1,17 @@
+{
+  "schema_version": 3,
+  "notes": "(t) Same control (0.079 / 82.4%) and throughput as (s), but the candidate's KLD is 0.11 (+0.031 > margin 0.02) with same-top inside its margin: quality_gate, and the detail names the candidate's KLD, the control's and the margin.",
+  "thresholds": { "kld_margin": 0.02, "same_top_margin_pct": 3.0, "control_kld_cap": 0.2, "noise_k": 2.0, "min_samples": 3 },
+  "workload": { "depths": [0, 32768], "objective": { "metric": "pp", "depth": 32768 }, "guard_pct": 3.0, "kld_ctx": 32768 },
+  "repeats": 3,
+  "control": { "mean_kld": 0.079, "same_top_pct": 82.4 },
+  "baseline": { "samples": [
+    {"depth": 0, "pp_tok_s": 1078.60, "tg_tok_s": 54.18}, {"depth": 0, "pp_tok_s": 1080.57, "tg_tok_s": 54.49}, {"depth": 0, "pp_tok_s": 1082.54, "tg_tok_s": 54.80},
+    {"depth": 32768, "pp_tok_s": 368.18, "tg_tok_s": 41.29}, {"depth": 32768, "pp_tok_s": 369.42, "tg_tok_s": 41.34}, {"depth": 32768, "pp_tok_s": 370.66, "tg_tok_s": 41.39}
+  ] },
+  "candidate": { "samples": [
+    {"depth": 0, "pp_tok_s": 1075.66, "tg_tok_s": 53.29}, {"depth": 0, "pp_tok_s": 1077.66, "tg_tok_s": 53.59}, {"depth": 0, "pp_tok_s": 1079.66, "tg_tok_s": 53.89},
+    {"depth": 32768, "pp_tok_s": 563.41, "tg_tok_s": 43.30}, {"depth": 32768, "pp_tok_s": 564.61, "tg_tok_s": 43.35}, {"depth": 32768, "pp_tok_s": 565.81, "tg_tok_s": 43.40}
+  ], "kld": {"mean_kld": 0.11, "same_top_pct": 82.0}, "failure": null, "identical_to_baseline": false },
+  "expect": { "verdict": "reject", "reason_kind": "quality_gate", "detail_contains": "KLD 0.1100 > control 0.0790 + 0.0200" }
+}

@@ -1,0 +1,11 @@
+[package]
+name = "roofline"
+version = "0.1.0"
+edition = "2024"
+description = "hardware + model shape + quant -> expected decode tok/s and memory fit"
+license = "MIT"
+
+[dependencies]
+roofline-benchmarks = { path = "../benchmarks" }
+serde = { version = "1", features = ["derive"] }
+toml = "0.9"

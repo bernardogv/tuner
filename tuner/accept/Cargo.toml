@@ -1,0 +1,17 @@
+[package]
+name = "accept"
+description = "Acceptance harness for tuner: cargo run -p accept -- [--only A3] [--json] [--live]"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "accept"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.9"
+tuner = { path = "../tuner" }

@@ -1,0 +1,10 @@
+{
+  "schema_version": 3,
+  "notes": "Thresholds (v1.1): the quality gate is relative to the reorder-only control: candidate KLD <= control + 0.02 and same-top >= control - 3.0 pts, with the control itself capped at 0.2; noise_k 2.0 on the Welch SE; min_samples 3. The v0-shaped fixtures (a..r) use the 512-ctx floor as the control (0.035 / 87%, strix-casebook 2026-10-17 backend drift). (a) +4% tg with +-3% noise and KLD doubled 0.035->0.07 (+0.035 > margin 0.02): quality gate fires before the noise gate is consulted.",
+  "thresholds": { "kld_margin": 0.02, "same_top_margin_pct": 3.0, "control_kld_cap": 0.2, "noise_k": 2.0, "min_samples": 3 },
+  "repeats": 3,
+  "control": { "mean_kld": 0.035, "same_top_pct": 87.0 },
+  "baseline": { "samples": [{"pp_tok_s": 1080.0, "tg_tok_s": 52.4}, {"pp_tok_s": 1085.0, "tg_tok_s": 54.0}, {"pp_tok_s": 1090.0, "tg_tok_s": 55.6}] },
+  "candidate": { "samples": [{"pp_tok_s": 1100.0, "tg_tok_s": 54.5}, {"pp_tok_s": 1105.0, "tg_tok_s": 56.2}, {"pp_tok_s": 1110.0, "tg_tok_s": 57.8}], "kld": {"mean_kld": 0.07, "same_top_pct": 83.0}, "failure": null, "identical_to_baseline": false },
+  "expect": { "verdict": "reject", "reason_kind": "quality_gate", "detail_contains": "KLD 0.0700 > control 0.0350 + 0.0200" }
+}

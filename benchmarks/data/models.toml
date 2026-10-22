@@ -1,0 +1,93 @@
+# Model *architectures*. A run points at one of these plus a concrete checkpoint string.
+# params_active_b is what the roofline needs: bytes read per decoded token = active params x bytes/param.
+
+[[model]]
+id = "qwen3.6-35b-a3b"
+name = "Qwen3.6-35B-A3B"
+arch = "qwen3_5_moe hybrid linear+full attention, 40 layers, 256 experts top-8, 10 full-attention layers"
+params_total_b = 35.0
+params_active_b = 3.0
+notes = "Active GB/token for this shape was computed exactly (dense + output head + experts x 8/256): Q8_0 3.196, NVFP4-experts 2.752, APEX mixed 2.393. Decensored (heretic) GGUF variants share the architecture."
+
+[model.shape]
+hidden = 2048
+layers = 40
+vocab = 248320
+full_attention_layers = 10
+n_heads = 16
+n_kv_heads = 2
+head_dim = 256
+attn_output_gate = true
+linear_attention = { key_heads = 16, key_head_dim = 128, value_heads = 32, value_head_dim = 128 }
+moe = { n_experts = 256, top_k = 8, intermediate = 512, shared_intermediate = 512 }
+
+[[model]]
+id = "ornith-1.0-35b"
+name = "Ornith-1.0-35B"
+arch = "35B-A3B MoE, 40 layers, 256 experts top-8 (same shape as qwen3.6-35b-a3b)"
+params_total_b = 35.0
+params_active_b = 3.0
+notes = "Served from local GGUF conversions. Its Q8_0 no-speculation cell is the roofline anchor for gb10."
+
+[model.shape]
+hidden = 2048
+layers = 40
+vocab = 248320
+full_attention_layers = 10
+n_heads = 16
+n_kv_heads = 2
+head_dim = 256
+attn_output_gate = true
+linear_attention = { key_heads = 16, key_head_dim = 128, value_heads = 32, value_head_dim = 128 }
+moe = { n_experts = 256, top_k = 8, intermediate = 512, shared_intermediate = 512 }
+
+[[model]]
+id = "nemotron-3.5-lightning-30b-a3b"
+name = "NVIDIA Nemotron 3.5 Lightning 30B-A3B"
+arch = "NemotronHForCausalLM hybrid (6 attention layers of 52), MoE, embedded MTP head (num_nextn_predict_layers=1)"
+params_total_b = 30.0
+params_active_b = 3.0
+notes = "No official active/total split in the checkpoint export; active fraction approximated as 3/30."
+
+[[model]]
+id = "qwen3-coder-next-80b-a3b"
+name = "Qwen3-Coder-Next 80B-A3B"
+arch = "48-layer MoE, no MTP head"
+params_total_b = 80.0
+params_active_b = 3.0
+
+[[model]]
+id = "laguna-s-2.1-118b-a8b"
+name = "Poolside Laguna-S 2.1 118B-A8B"
+arch = "MoE, DFlash speculative draft shipped separately"
+params_total_b = 118.0
+params_active_b = 8.0
+
+[[model]]
+id = "mistral-small-4-119b"
+name = "Mistral Small 4 119B (2603)"
+arch = "MoE with MLA attention, native Mistral checkpoint format, no MTP head"
+params_total_b = 119.0
+notes = "Active parameter count not derived; see MEASURE-LATER.md."
+
+[[model]]
+id = "minimax-m2.7-230b-a10b"
+name = "MiniMax M2.7 230B-A10B"
+arch = "MiniMaxM2ForCausalLM, 62 layers, 256 experts top-8, hidden 3072, expert intermediate 1536, 8 KV heads, 3 MTP modules"
+params_total_b = 230.0
+params_active_b = 10.37
+notes = "Active count derived from the architecture (routed-expert mass 224.7B)."
+
+[[model]]
+id = "nemotron-3-nano-30b-a3b"
+name = "NVIDIA Nemotron 3 Nano 30B-A3B"
+arch = "NemotronH hybrid MoE"
+params_total_b = 30.0
+params_active_b = 3.0
+
+[[model]]
+id = "gpt-oss-120b"
+name = "OpenAI gpt-oss-120b"
+arch = "MoE, 128 experts top-4, shipped MXFP4"
+params_total_b = 117.0
+params_active_b = 5.1

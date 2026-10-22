@@ -1,0 +1,12 @@
+{
+  "schema_version": 3,
+  "host": "strix",
+  "model": "gpt-oss-120b-MXFP4.gguf",
+  "winner": { "backend": "hip", "fa": true, "ub": 1024, "b": 2048, "ctk": "q8_0", "ctv": "f16", "ctx": 8192, "np": 1, "hipblaslt": true },
+  "objective": { "metric": "tg", "depth": 0 },
+  "series": [
+    { "series": { "metric": "pp", "depth": 0 }, "stats": { "mean": 1010.0, "stdev": 8.0, "n": 3 } },
+    { "series": { "metric": "tg", "depth": 0 }, "stats": { "mean": 51.2, "stdev": 0.3, "n": 3 } }
+  ],
+  "recorded_utc": "2026-10-18T00:00:00Z"
+}

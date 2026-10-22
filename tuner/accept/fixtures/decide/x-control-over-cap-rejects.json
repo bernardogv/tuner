@@ -1,0 +1,10 @@
+{
+  "schema_version": 3,
+  "notes": "(x) A broken instrument: the control reads 0.25 / 60% (over control_kld_cap 0.2; an honest reorder-only control never exceeds ~0.08 even at 32k). The candidate's own numbers (0.03 / 90%, +10% tg) would pass any margin, but nothing can be judged against this control: quality_gate with a detail that blames the control, not the candidate.",
+  "thresholds": { "kld_margin": 0.02, "same_top_margin_pct": 3.0, "control_kld_cap": 0.2, "noise_k": 2.0, "min_samples": 3 },
+  "repeats": 3,
+  "control": { "mean_kld": 0.25, "same_top_pct": 60.0 },
+  "baseline": { "samples": [{"pp_tok_s": 1080.0, "tg_tok_s": 53.5}, {"pp_tok_s": 1085.0, "tg_tok_s": 54.0}, {"pp_tok_s": 1090.0, "tg_tok_s": 54.5}] },
+  "candidate": { "samples": [{"pp_tok_s": 1100.0, "tg_tok_s": 58.9}, {"pp_tok_s": 1105.0, "tg_tok_s": 59.4}, {"pp_tok_s": 1110.0, "tg_tok_s": 59.9}], "kld": {"mean_kld": 0.03, "same_top_pct": 90.0}, "failure": null, "identical_to_baseline": false },
+  "expect": { "verdict": "reject", "reason_kind": "quality_gate", "detail_contains": "control KLD 0.2500 > cap 0.2000" }
+}

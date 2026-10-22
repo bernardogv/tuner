@@ -1,0 +1,10 @@
+[package]
+name = "roofline-benchmarks"
+version = "0.1.0"
+edition = "2024"
+description = "Public model x hardware x engine x quant -> tok/s table, with % of memory-bandwidth roofline"
+license = "MIT"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+toml = "0.9"

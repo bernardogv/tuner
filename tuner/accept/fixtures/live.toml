@@ -1,0 +1,18 @@
+# A5 live sweep on strix: baseline + one candidate (ub 1024), 3 repeats
+# (min_samples is 3: fewer can never keep, so A6 would never see a real warm start). gpt-oss-120b MXFP4.
+schema_version = 3
+repeats = 3
+
+[baseline]
+backend = "vulkan"
+fa = true
+ub = 512
+b = 2048
+ctk = "f16"
+ctv = "f16"
+ctx = 8192
+np = 1
+hipblaslt = false
+
+[grid]
+ub = [512, 1024]

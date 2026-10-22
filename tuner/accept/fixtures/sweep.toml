@@ -1,0 +1,21 @@
+# A3 plan fixture. Product: backend 2 x ub 2 x ctk 2 x hipblaslt 2 = 16; vulkan+hipblaslt=true
+# normalizes to false (4 vulkan points, not 8) -> 12 distinct; minus the baseline -> 11 candidates.
+schema_version = 3
+repeats = 3
+
+[baseline]
+backend = "vulkan"
+fa = true
+ub = 512
+b = 2048
+ctk = "f16"
+ctv = "f16"
+ctx = 8192
+np = 1
+hipblaslt = false
+
+[grid]
+backend = ["vulkan", "hip"]
+ub = [512, 1024]
+ctk = ["f16", "q8_0"]
+hipblaslt = [false, true]

@@ -1,0 +1,38 @@
+# Hardware profiles. One entry per distinct machine class.
+# decode_bw_gbs is the *achieved* memory bandwidth of real single-stream MoE decode on this
+# hardware, established by a clean no-speculation measurement (tok/s x active-GB-per-token).
+# That, not the spec sheet, is what every roofline % in TABLE.md divides by.
+
+[[hardware]]
+id = "gb10"
+name = "NVIDIA DGX Spark (GB10, Grace Blackwell)"
+memory_gib = 121.69
+memory_kind = "unified LPDDR5X, no separate VRAM, swap off"
+spec_bw_gbs = 273.0
+stream_copy_gbs = 245.6
+decode_bw_gbs = 187.0
+bf16_tflops = 250.0
+notes = """
+stream_copy_gbs: BabelStream cuda-stream Copy, 2026-08-19 (Dot 257.4). The 273 spec figure is not achievable.
+decode_bw_gbs: 58.5 tok/s x 3.196 GB/token on a Q8_0 35B-A3B with no speculation = 187 GB/s = 76% of STREAM copy.
+Batched vLLM/SGLang decode reaches ~85% of STREAM copy (see the Qwen3.6 rows), so 100% in the table means
+"as good as llama.cpp single-stream", not "at the physical ceiling". Prefill runs at ~4% of BF16 peak on every engine.
+Two-node cells use a single 200G QSFP56 DAC between two of these (NCCL busbw ~24 GB/s).
+"""
+
+[[hardware]]
+id = "strix"
+name = "AMD Ryzen AI Max+ 395 (Strix Halo, Radeon 8060S gfx1151, Framework Desktop)"
+memory_gib = 122.0
+memory_kind = "unified LPDDR5X-8000 256-bit, GTT 120 GiB (BIOS UMA 512 MiB), swap off"
+spec_bw_gbs = 256.0
+stream_copy_gbs = 223.0
+decode_bw_gbs = 195.0
+bf16_tflops = 59.4
+notes = """
+Source: ~/Projects/homelab/strix-casebook (hardware.md; entries 2026-10-05-gpt-oss-120b-vulkan-vs-hip, 2026-10-06-rvs-baseline).
+stream_copy_gbs: RVS babel *triad* (HIP), 2026-10-06 (Dot 242); gb10's figure is Copy, so the two are not like for like.
+decode_bw_gbs: llama.cpp Vulkan, gpt-oss-120b MXFP4, 54.27 tok/s x 3.594 GB/token = 195 GB/s; HIP decode reaches 175.
+bf16_tflops: no published dense peak; 40 CU x 2.9 GHz x 512 FLOP/clk. A torch bf16 matmul measured 37.3 (2026-10-19, ROCm 10.1).
+Single-process GPU ceiling 117 GiB with kho=off.
+"""

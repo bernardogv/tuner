@@ -1,0 +1,114 @@
+[
+  {
+    "build_commit": "d81235049",
+    "model_filename": "/models/gpt-oss-120b-gguf/gpt-oss-120b-MXFP4.gguf",
+    "model_type": "gpt-oss 120B MXFP4 MoE",
+    "n_batch": 2048,
+    "n_ubatch": 512,
+    "flash_attn": 1,
+    "type_k": "f16",
+    "type_v": "f16",
+    "n_prompt": 512,
+    "n_gen": 0,
+    "n_depth": 0,
+    "test_time": "2026-10-05T20:23:31Z",
+    "avg_ns": 470885252,
+    "stddev_ns": 591839,
+    "avg_ts": 1087.314873,
+    "stddev_ts": 1.365792,
+    "samples_ns": [
+      471464569,
+      470282390,
+      470908798
+    ],
+    "samples_ts": [
+      1085.98,
+      1088.71,
+      1087.26
+    ]
+  },
+  {
+    "build_commit": "d81235049",
+    "model_filename": "/models/gpt-oss-120b-gguf/gpt-oss-120b-MXFP4.gguf",
+    "model_type": "gpt-oss 120B MXFP4 MoE",
+    "n_batch": 2048,
+    "n_ubatch": 512,
+    "flash_attn": 1,
+    "type_k": "f16",
+    "type_v": "f16",
+    "n_prompt": 0,
+    "n_gen": 128,
+    "n_depth": 0,
+    "test_time": "2026-10-05T20:23:33Z",
+    "avg_ns": 2376153484,
+    "stddev_ns": 5091746,
+    "avg_ts": 53.868739,
+    "stddev_ts": 0.11557,
+    "samples_ns": [
+      2370276015,
+      2378969635,
+      2379214803
+    ],
+    "samples_ts": [
+      54.0021,
+      53.8048,
+      53.7993
+    ]
+  },
+  {
+    "build_commit": "d81235049",
+    "model_filename": "/models/gpt-oss-120b-gguf/gpt-oss-120b-MXFP4.gguf",
+    "model_type": "gpt-oss 120B MXFP4 MoE",
+    "n_batch": 2048,
+    "n_ubatch": 512,
+    "flash_attn": 1,
+    "type_k": "f16",
+    "type_v": "f16",
+    "n_prompt": 512,
+    "n_gen": 0,
+    "n_depth": 32768,
+    "test_time": "2026-10-05T20:23:41Z",
+    "avg_ns": 1448101736,
+    "stddev_ns": 9886507,
+    "avg_ts": 353.577279,
+    "stddev_ts": 2.408072,
+    "samples_ns": [
+      1439718950,
+      1445582183,
+      1459004077
+    ],
+    "samples_ts": [
+      355.625,
+      354.183,
+      350.924
+    ]
+  },
+  {
+    "build_commit": "d81235049",
+    "model_filename": "/models/gpt-oss-120b-gguf/gpt-oss-120b-MXFP4.gguf",
+    "model_type": "gpt-oss 120B MXFP4 MoE",
+    "n_batch": 2048,
+    "n_ubatch": 512,
+    "flash_attn": 1,
+    "type_k": "f16",
+    "type_v": "f16",
+    "n_prompt": 0,
+    "n_gen": 128,
+    "n_depth": 32768,
+    "test_time": "2026-10-05T20:24:43Z",
+    "avg_ns": 3073430434,
+    "stddev_ns": 865284,
+    "avg_ts": 41.647276,
+    "stddev_ts": 0.011726,
+    "samples_ns": [
+      3074171757,
+      3073639900,
+      3072479645
+    ],
+    "samples_ts": [
+      41.6372,
+      41.6444,
+      41.6602
+    ]
+  }
+]

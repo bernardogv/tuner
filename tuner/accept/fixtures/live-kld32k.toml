@@ -1,0 +1,25 @@
+# A8 live sweep on strix (--live --kld-32k): quality at depth. Bench stays at depth 0 (cheap); every
+# KLD run is `-c 32768 --chunks 2` (32k scored tokens at 16k-32k depth), so the baseline logits
+# file is ~13 GB (gpt-oss n_vocab 201088 x 2 bytes x 32768) and each KLD run ~5 min (strix-casebook
+# 2026-10-21-tuner-v1-depth-sweep §3). One candidate: f16 K / q8_0 V, measured there at 0.086 / 81.4%
+# against the ub-1024 control's 0.079 / 82.4% (+0.007 / -1.0), so it must pass the relative gate.
+# Budget ~20 min: three 32k KLD runs plus two depth-0 benches and model loads.
+schema_version = 3
+repeats = 3
+
+[workload]
+kld_ctx = 32768
+
+[baseline]
+backend = "vulkan"
+fa = true
+ub = 512
+b = 2048
+ctk = "f16"
+ctv = "f16"
+ctx = 8192
+np = 1
+hipblaslt = false
+
+[grid]
+ctv = ["f16", "q8_0"]

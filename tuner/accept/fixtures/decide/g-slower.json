@@ -1,0 +1,10 @@
+{
+  "schema_version": 3,
+  "notes": "(g) Slower candidate with clean KLD and flat pp (so the v1 guard on pp@0 stays quiet): the noise gate rejects a non-positive delta (reason detail must say so).",
+  "thresholds": { "kld_margin": 0.02, "same_top_margin_pct": 3.0, "control_kld_cap": 0.2, "noise_k": 2.0, "min_samples": 3 },
+  "repeats": 3,
+  "control": { "mean_kld": 0.035, "same_top_pct": 87.0 },
+  "baseline": { "samples": [{"pp_tok_s": 1080.0, "tg_tok_s": 53.5}, {"pp_tok_s": 1085.0, "tg_tok_s": 54.0}, {"pp_tok_s": 1090.0, "tg_tok_s": 54.5}] },
+  "candidate": { "samples": [{"pp_tok_s": 1082.0, "tg_tok_s": 50.0}, {"pp_tok_s": 1086.0, "tg_tok_s": 51.0}, {"pp_tok_s": 1091.0, "tg_tok_s": 52.0}], "kld": {"mean_kld": 0.035, "same_top_pct": 87.0}, "failure": null, "identical_to_baseline": false },
+  "expect": { "verdict": "reject", "reason_kind": "noise_gate" }
+}

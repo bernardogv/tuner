@@ -1,0 +1,19 @@
+# A3: the objective is pp@32768 but only depth 0 is measured. `tuner plan` must exit FAILED
+# naming the objective; nothing may be contacted.
+schema_version = 3
+repeats = 3
+
+[workload]
+depths = [0]
+objective = { metric = "pp", depth = 32768 }
+
+[baseline]
+backend = "vulkan"
+fa = true
+ub = 512
+b = 2048
+ctk = "f16"
+ctv = "f16"
+ctx = 8192
+np = 1
+hipblaslt = false

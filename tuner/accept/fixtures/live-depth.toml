@@ -1,0 +1,31 @@
+# A7 live sweep on strix: the casebook's HIP-at-32k tradeoff (strix-casebook
+# 2026-10-05-gpt-oss-120b-vulkan-vs-hip: HIP pp512 at 32k depth 493 vs 333 tok/s = +48%, tg128 at
+# depth 0 48.7 vs 54.3 = -10%). Baseline Vulkan; one candidate, HIP with hipBLASLt (the casebook's
+# HIP stack: vulkan+hipblaslt normalizes to the baseline and drops out). Objective pp@32768.
+# guard 15 so the measured decode losses (tg@0 -7..-10%, tg@32768 -7%) are tolerated and the
+# keep + recipe-winner path runs; with the default guard 3 the same numbers must reject as
+# guard_regression. A7 recomputes the rule from results.json either way and asserts no winner.
+# Cost: 3 repeats x 2 depths x 2 configs; a 32k prefill is ~95 s on Vulkan and ~65 s on HIP per
+# repeat per row, so budget ~25 min.
+schema_version = 3
+repeats = 3
+
+[workload]
+depths = [0, 32768]
+objective = { metric = "pp", depth = 32768 }
+guard_pct = 15.0
+
+[baseline]
+backend = "vulkan"
+fa = true
+ub = 512
+b = 2048
+ctk = "f16"
+ctv = "f16"
+ctx = 8192
+np = 1
+hipblaslt = false
+
+[grid]
+backend = ["vulkan", "hip"]
+hipblaslt = [true]

@@ -1,0 +1,894 @@
+# Measured decode cells on DGX Spark (GB10), contributed by Roofline Labs from its lab notebook.
+# One [[run]] per measurement. Field reference: SCHEMA.md. Sources are notebook entry dates.
+#
+# Conventions used here:
+#   decode_tok_s            per-stream median at concurrency 1; aggregate at concurrency > 1
+#   active_gb_per_token     bytes actually read per decoded token (GB, decimal)
+#   active_gb_method        arch = computed from layer shapes; fraction = checkpoint_gb x active/total params; assumed = borrowed
+#   speculation             none | draft-mtp (llama.cpp) | nextn (SGLang) | mtp (vLLM) | dflash | unknown
+#   prefill_tok_s           at prefill_prompt_tokens (actual token count, not the nominal label)
+
+# ───────────────────────────── 2026-08-19 roofline anchor session (llama.cpp, single-stream, 256 tok, greedy)
+
+[[run]]
+id = "2026-08-19-ornith-q8-llamacpp-c1"
+date = "2026-08-19"
+model = "ornith-1.0-35b"
+checkpoint = "Ornith-1.0-35B Q8_0 GGUF (no MTP head)"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "2026-08 build"
+quant = "Q8_0"
+checkpoint_gb = 34.4
+active_gb_per_token = 3.196
+active_gb_method = "arch"
+speculation = "none"
+concurrency = 1
+decode_tok_s = 58.5
+prefill_tok_s = 1608.0
+prefill_prompt_tokens = 4138
+source = "lab:2026-08-19-roofline-anchor"
+notes = "THE ANCHOR: the only clean no-speculation cell on the box in Aug 2026; defines decode_bw_gbs = 187. llama-bench tg128 on the same model gives 59.1-59.6, so llama-server costs ~2%."
+
+[[run]]
+id = "2026-08-19-qwen36-heretic-q8-llamacpp-c1"
+date = "2026-08-19"
+model = "qwen3.6-35b-a3b"
+checkpoint = "Qwen3.6-35B-A3B heretic (decensored) Q8_0 GGUF, native MTP head preserved"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "2026-08 build"
+quant = "Q8_0"
+checkpoint_gb = 36.0
+active_gb_per_token = 3.196
+active_gb_method = "arch"
+speculation = "draft-mtp"
+concurrency = 1
+decode_tok_s = 69.1
+source = "lab:2026-08-19-roofline-anchor"
+notes = "Draft acceptance ~52%. Coding eval 10/10 (thinking off)."
+
+[[run]]
+id = "2026-08-19-qwen36-heretic-nvfp4rtn-llamacpp-c1"
+date = "2026-08-19"
+model = "qwen3.6-35b-a3b"
+checkpoint = "Qwen3.6-35B-A3B heretic, experts NVFP4 via llama-quantize RTN (data-free), attention Q8_0"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "2026-08 build"
+quant = "NVFP4-RTN-experts"
+checkpoint_gb = 21.0
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "draft-mtp"
+concurrency = 1
+decode_tok_s = 80.5
+prefill_tok_s = 1823.0
+prefill_prompt_tokens = 4138
+source = "lab:2026-08-19-roofline-anchor"
+notes = "Quant was lossless on this model (coding eval 10/10 == Q8_0). Draft acceptance unchanged vs Q8_0 (51.3% vs 52.2%)."
+
+[[run]]
+id = "2026-08-19-ornith-heretic-apex-llamacpp-c1"
+date = "2026-08-19"
+model = "ornith-1.0-35b"
+checkpoint = "Ornith-35B heretic APEX mixed-IQ quant (SC117), has MTP head"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "2026-08 build"
+quant = "APEX-mixed"
+checkpoint_gb = 21.9
+active_gb_per_token = 2.393
+active_gb_method = "arch"
+speculation = "draft-mtp"
+concurrency = 1
+decode_tok_s = 70.8
+source = "lab:2026-08-19-roofline-anchor"
+notes = "THE DIAGNOSTIC CASE: smallest active footprint of the set yet slower than NVFP4 and 9% under its own size prediction even with speculation on — mixed IQ types are dequant-compute-bound, not bandwidth-bound."
+
+# ───────────────────────────── 2026-08-08 NVFP4 quantization (llama.cpp)
+
+[[run]]
+id = "2026-08-08-ornith-nvfp4rtn-llamacpp-c1"
+date = "2026-08-08"
+model = "ornith-1.0-35b"
+checkpoint = "Ornith-1.0-35B, experts NVFP4 via llama-quantize RTN (data-free), attention Q8_0, no MTP head"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "2026-08 build"
+quant = "NVFP4-RTN-experts"
+checkpoint_gb = 19.0
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "none"
+concurrency = 1
+decode_tok_s = 83.0
+source = "lab:2026-08-08-nvfp4-quantization"
+notes = "+48.7% over the same-day Q8_0 baseline (55.8) but coding eval fell 8/10 -> 5/10: REJECTED. Quant damage is per-model — the identical recipe was lossless on qwen3.6-heretic."
+
+[[run]]
+id = "2026-08-08-ornith-nvfp4rtn-llamacpp-c8"
+date = "2026-08-08"
+model = "ornith-1.0-35b"
+checkpoint = "Ornith-1.0-35B, experts NVFP4 via llama-quantize RTN (data-free), attention Q8_0, no MTP head"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "2026-08 build"
+quant = "NVFP4-RTN-experts"
+checkpoint_gb = 19.0
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "none"
+concurrency = 8
+decode_tok_s = 250.9
+source = "lab:2026-08-08-nvfp4-quantization"
+
+[[run]]
+id = "2026-08-08-ornith-q8-llamacpp-c8"
+date = "2026-08-08"
+model = "ornith-1.0-35b"
+checkpoint = "Ornith-1.0-35B Q8_0 GGUF (no MTP head)"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "2026-08 build"
+quant = "Q8_0"
+checkpoint_gb = 34.4
+active_gb_per_token = 3.196
+active_gb_method = "arch"
+speculation = "none"
+concurrency = 8
+decode_tok_s = 185.6
+source = "lab:2026-08-08-nvfp4-quantization"
+notes = "Same-day single-stream was 55.8 (vs 58.5 on 2026-08-19, the anchor)."
+
+# ───────────────────────────── 2026-08-19 AEON Ornith NVFP4 + DFlash on vLLM
+
+[[run]]
+id = "2026-08-19-ornith-aeon-nvfp4-vllm-dflash-c1"
+date = "2026-08-19"
+model = "ornith-1.0-35b"
+checkpoint = "Ornith NVFP4 (AEON build, 23 GB) + DFlash drafter (905 MB)"
+hardware = "gb10"
+engine = "vllm"
+engine_version = "0.27.1+aeon.sm121a (community container)"
+quant = "NVFP4"
+checkpoint_gb = 23.0
+active_gb_per_token = 2.752
+active_gb_method = "assumed"
+speculation = "dflash"
+concurrency = 1
+decode_tok_s = 95.3
+prefill_tok_s = 5197.0
+prefill_prompt_tokens = 4096
+config = "--gpu-memory-utilization 0.6, --max-num-seqs 16, MARLIN weight-only kernel"
+source = "lab:2026-08-19-aeon-ornith-vllm"
+notes = "Reproduced the container author's decode claim (93.3) and DFlash 3.74 tok/step (45.6% acceptance). Did NOT reproduce their 9,661 prefill — 5,197 peak, decaying to 3,208 at 139k. Prefill 3.2x llama.cpp on the same prompts, same day. Active GB assumed equal to the NVFP4-experts GGUF footprint. --max-num-seqs > 16 with DFlash hard-crashes the box."
+
+# ───────────────────────────── 2026-08-19..23 Laguna-S 2.1 (118B-A8B)
+
+[[run]]
+id = "2026-08-19-laguna-s-q4km-llamacpp-c1"
+date = "2026-08-19"
+model = "laguna-s-2.1-118b-a8b"
+checkpoint = "Laguna-S-2.1 Q4_K_M GGUF (90 GB — model card said 68)"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "Poolside fork, branch laguna (2026-08)"
+quant = "Q4_K_M"
+checkpoint_gb = 90.0
+active_gb_per_token = 6.10
+active_gb_method = "fraction"
+speculation = "none"
+concurrency = 1
+decode_tok_s = 22.5
+config = "-c 16384"
+source = "lab:2026-08-19-laguna-dflash-llamacpp"
+notes = "Leaves ~22 GB free at -c 16384; cannot coexist with anything."
+
+[[run]]
+id = "2026-08-19-laguna-s-q4km-llamacpp-dflash-c1"
+date = "2026-08-19"
+model = "laguna-s-2.1-118b-a8b"
+checkpoint = "Laguna-S-2.1 Q4_K_M GGUF + DFlash draft"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "Poolside fork, branch laguna (2026-08)"
+quant = "Q4_K_M"
+checkpoint_gb = 90.0
+active_gb_per_token = 6.10
+active_gb_method = "fraction"
+speculation = "dflash"
+concurrency = 1
+decode_tok_s = 27.3
+config = "--spec-draft-n-max 6"
+source = "lab:2026-08-19-laguna-dflash-llamacpp"
+notes = "Best of a sweep: n-max 15 was WORSE than plain (20.9). DFlash draft-context init on the 90 GB target is I/O-bound, 5-7 min. llama.cpp's DFlash on GB10 is far less efficient than vLLM's."
+
+[[run]]
+id = "2026-08-23-laguna-s-nvfp4-vllm-dflash-c1"
+date = "2026-08-23"
+model = "laguna-s-2.1-118b-a8b"
+checkpoint = "poolside/Laguna-S-2.1-NVFP4 @ 07614121b318 (15 shards, 71,916,714,120 B) + DFlash draft"
+hardware = "gb10"
+engine = "vllm"
+engine_version = "0.25.1"
+quant = "NVFP4"
+checkpoint_gb = 71.92
+active_gb_per_token = 4.54
+active_gb_method = "fraction"
+speculation = "dflash"
+concurrency = 1
+decode_tok_s = 50.6
+config = "--gpu-memory-utilization 0.80, thinking off, code-generation prompt"
+source = "lab:2026-08-23-laguna-jul-rev-load-measured"
+notes = "Median of 3 (48.2-53.5); 52.9 at util 0.85. DFlash mean acceptance length 4.5-6.8. Published single-stream for this model is 19-24 tok/s without DFlash. Pin the revision: the main branch of the same repo is 99.7 GB (experts of layers 40-47 left BF16)."
+
+# ───────────────────────────── 2026-09-04 Phase 1 engine bake-off (reference model held fixed)
+# nvidia/Qwen3.6-35B-A3B-NVFP4 @ 491c2f1ea524c639598bf8fa787a93fed5a6fbce (23,424,338,320 B).
+# Harness: per-stream median, first token excluded. Prompts nonce-first so prefix cache never hits.
+# Nominal 32k prompts are 29,010 actual tokens; 96k are 87,109.
+
+[[run]]
+id = "2026-09-04-qwen36-nvfp4-llamacpp-c1"
+date = "2026-09-04"
+model = "qwen3.6-35b-a3b"
+checkpoint = "nvidia/Qwen3.6-35B-A3B-NVFP4 @ 491c2f1e, repacked to GGUF (MTP head left BF16)"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "v0.3.0 native"
+quant = "NVFP4"
+checkpoint_gb = 23.85
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "none"
+concurrency = 1
+decode_tok_s = 55.1
+prefill_tok_s = 2262.8
+prefill_prompt_tokens = 29010
+config = "--jinja, -c CTX*NP"
+source = "lab:2026-09-04-engine-bakeoff-llamacpp"
+notes = "Prefill 2148.4 @4k / 1960.0 @96k. Cold start 6.7 s, MemAvailable after load 82.8 GiB. Same build in a container: within 1%, +8.1 s cold start."
+
+[[run]]
+id = "2026-09-04-qwen36-nvfp4-llamacpp-mtp-c1"
+date = "2026-09-04"
+model = "qwen3.6-35b-a3b"
+checkpoint = "nvidia/Qwen3.6-35B-A3B-NVFP4 @ 491c2f1e, repacked to GGUF (MTP head left BF16)"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "v0.3.0 native"
+quant = "NVFP4"
+checkpoint_gb = 23.85
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "draft-mtp"
+concurrency = 1
+decode_tok_s = 89.0
+config = "--spec-type draft-mtp"
+source = "lab:2026-09-04-engine-bakeoff-llamacpp-mtp"
+notes = "1.62x over no-spec at 85.9% acceptance. Costs 9-10% of prefill, ~4 GiB, +12 s cold start."
+
+[[run]]
+id = "2026-09-04-qwen36-nvfp4-llamacpp-c4"
+date = "2026-09-04"
+model = "qwen3.6-35b-a3b"
+checkpoint = "nvidia/Qwen3.6-35B-A3B-NVFP4 @ 491c2f1e, repacked to GGUF"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "v0.3.0 native"
+quant = "NVFP4"
+checkpoint_gb = 23.85
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "none"
+concurrency = 4
+decode_tok_s = 126.7
+decode_per_stream_tok_s = 32.6
+source = "lab:2026-09-04-engine-bakeoff-llamacpp"
+
+[[run]]
+id = "2026-09-04-qwen36-nvfp4-vllm-c1"
+date = "2026-09-04"
+model = "qwen3.6-35b-a3b"
+checkpoint = "nvidia/Qwen3.6-35B-A3B-NVFP4 @ 491c2f1e"
+hardware = "gb10"
+engine = "vllm"
+engine_version = "v0.28.0 (upstream image)"
+quant = "NVFP4"
+checkpoint_gb = 23.42
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "none"
+concurrency = 1
+decode_tok_s = 75.4
+prefill_tok_s = 4966.8
+prefill_prompt_tokens = 29010
+config = "KV bf16 (engine default), Marlin weight-only MoE (the only NVFP4 MoE path on GB10 in this version)"
+source = "lab:2026-09-04-engine-bakeoff-vllm-upstream"
+notes = "Prefill 5071.4 @4k / 3710.2 @96k. Cold start 325.9 s, MemAvailable after load 50.6 GiB. 111% of the llama.cpp-derived roofline = ~85% of STREAM copy. FLASHINFER_TRTLLM and FLASHINFER_CUTLASS FP4 MoE backends both refuse the device/scale scheme."
+
+[[run]]
+id = "2026-09-04-qwen36-nvfp4-vllm-mtp-c1"
+date = "2026-09-04"
+model = "qwen3.6-35b-a3b"
+checkpoint = "nvidia/Qwen3.6-35B-A3B-NVFP4 @ 491c2f1e"
+hardware = "gb10"
+engine = "vllm"
+engine_version = "v0.28.0 (upstream image)"
+quant = "NVFP4"
+checkpoint_gb = 23.42
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "mtp"
+concurrency = 1
+decode_tok_s = 124.9
+prefill_tok_s = 4623.4
+prefill_prompt_tokens = 29010
+config = "--speculative-config method=mtp"
+source = "lab:2026-09-04-engine-bakeoff-vllm-upstream-mtp"
+notes = "1.66x at 77.3% acceptance (4417/5715). Costs 7-8% of prefill and +102 s cold start."
+
+[[run]]
+id = "2026-09-04-qwen36-nvfp4-vllm-kvfp8-c1"
+date = "2026-09-04"
+model = "qwen3.6-35b-a3b"
+checkpoint = "nvidia/Qwen3.6-35B-A3B-NVFP4 @ 491c2f1e"
+hardware = "gb10"
+engine = "vllm"
+engine_version = "v0.28.0 (upstream image)"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 23.42
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "none"
+concurrency = 1
+decode_tok_s = 76.6
+prefill_tok_s = 4740.4
+prefill_prompt_tokens = 29010
+config = "--kv-cache-dtype fp8"
+source = "lab:2026-09-04-engine-bakeoff-vllm-upstream-kvfp8"
+notes = "fp8 KV moved vLLM prefill the WRONG way (-4.6% @32k, -10.6% @96k), decode flat. So SGLang's prefill lead is not its fp8-KV default."
+
+[[run]]
+id = "2026-09-04-qwen36-nvfp4-vllm-c4"
+date = "2026-09-04"
+model = "qwen3.6-35b-a3b"
+checkpoint = "nvidia/Qwen3.6-35B-A3B-NVFP4 @ 491c2f1e"
+hardware = "gb10"
+engine = "vllm"
+engine_version = "v0.28.0 (upstream image)"
+quant = "NVFP4"
+checkpoint_gb = 23.42
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "none"
+concurrency = 4
+decode_tok_s = 193.8
+decode_per_stream_tok_s = 49.5
+source = "lab:2026-09-04-engine-bakeoff-vllm-upstream"
+
+[[run]]
+id = "2026-09-04-qwen36-nvfp4-vllm-mtp-c4"
+date = "2026-09-04"
+model = "qwen3.6-35b-a3b"
+checkpoint = "nvidia/Qwen3.6-35B-A3B-NVFP4 @ 491c2f1e"
+hardware = "gb10"
+engine = "vllm"
+engine_version = "v0.28.0 (upstream image)"
+quant = "NVFP4"
+checkpoint_gb = 23.42
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "mtp"
+concurrency = 4
+decode_tok_s = 285.5
+source = "lab:2026-09-04-engine-bakeoff-vllm-upstream-mtp"
+
+[[run]]
+id = "2026-09-04-qwen36-nvfp4-sglang-c1"
+date = "2026-09-04"
+model = "qwen3.6-35b-a3b"
+checkpoint = "nvidia/Qwen3.6-35B-A3B-NVFP4 @ 491c2f1e"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 23.42
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "none"
+concurrency = 1
+decode_tok_s = 75.8
+prefill_tok_s = 5792.0
+prefill_prompt_tokens = 29010
+config = "--mem-fraction-static 0.50, KV fp8 (engine default)"
+source = "lab:2026-09-04-engine-bakeoff-sglang"
+notes = "Prefill 6634.8 @4k / 3719.0 @96k — +17% over vLLM at 32k, a real engine difference; tie at 96k. Cold start 253.5 s, MemAvailable after load 51.06 GiB. Survived a reboot: boot-to-token 304 s."
+
+[[run]]
+id = "2026-09-04-qwen36-nvfp4-sglang-nextn-c1"
+date = "2026-09-04"
+model = "qwen3.6-35b-a3b"
+checkpoint = "nvidia/Qwen3.6-35B-A3B-NVFP4 @ 491c2f1e"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 23.42
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "nextn"
+concurrency = 1
+decode_tok_s = 123.2
+prefill_tok_s = 5571.0
+prefill_prompt_tokens = 29010
+config = "--speculative-algorithm NEXTN (built-in MTP head)"
+source = "lab:2026-09-04-engine-bakeoff-sglang-mtp"
+notes = "1.63x at 78.2% acceptance, 3.39/4 accepted. Costs 3.8-4.4% of prefill, ~1.2 GiB, +16 s cold start. All three engines land in the same 1.62-1.66x speculation band; higher acceptance did not mean a bigger speedup."
+
+[[run]]
+id = "2026-09-04-qwen36-nvfp4-sglang-c4"
+date = "2026-09-04"
+model = "qwen3.6-35b-a3b"
+checkpoint = "nvidia/Qwen3.6-35B-A3B-NVFP4 @ 491c2f1e"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 23.42
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "none"
+concurrency = 4
+decode_tok_s = 189.2
+decode_per_stream_tok_s = 48.1
+source = "lab:2026-09-04-engine-bakeoff-sglang"
+
+[[run]]
+id = "2026-09-04-qwen36-nvfp4-sglang-nextn-c4"
+date = "2026-09-04"
+model = "qwen3.6-35b-a3b"
+checkpoint = "nvidia/Qwen3.6-35B-A3B-NVFP4 @ 491c2f1e"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 23.42
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "nextn"
+concurrency = 4
+decode_tok_s = 256.8
+source = "lab:2026-09-04-engine-bakeoff-sglang-mtp"
+
+# ───────────────────────────── 2026-09-06 Phase 2 model bake-off (SGLang v0.5.18 unless noted, same harness)
+
+[[run]]
+id = "2026-09-06-qwen36-nvfp4-sglang-nextn-c1"
+date = "2026-09-06"
+model = "qwen3.6-35b-a3b"
+checkpoint = "nvidia/Qwen3.6-35B-A3B-NVFP4 @ 491c2f1e"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 23.42
+active_gb_per_token = 2.752
+active_gb_method = "arch"
+speculation = "nextn"
+concurrency = 1
+decode_tok_s = 122.2
+prefill_tok_s = 5584.3
+prefill_prompt_tokens = 29010
+config = "--speculative-algorithm NEXTN, --mem-fraction-static 0.50"
+source = "lab:2026-09-06-model-bakeoff-qwen36-ref"
+notes = "Cross-phase continuity check: within 0.8% of the 2026-09-04 cell two days earlier. Prefill 6334.9 @4k / 3552.5 @96k. c4 257.3 aggregate / 66.9 per stream. Coding eval 9/10 off, 8/10 on."
+
+[[run]]
+id = "2026-09-06-nemotron35-nvfp4-sglang-nextn-c1"
+date = "2026-09-06"
+model = "nemotron-3.5-lightning-30b-a3b"
+checkpoint = "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4 @ cc84af2f (21,561,882,284 B), ModelOpt NVFP4"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 21.56
+active_gb_per_token = 2.01
+active_gb_method = "fraction"
+speculation = "nextn"
+concurrency = 1
+decode_tok_s = 106.7
+prefill_tok_s = 4713.1
+prefill_prompt_tokens = 29010
+config = "--speculative-algorithm NEXTN (embedded head), --mem-fraction-static 0.50, quantization modelopt_fp4"
+source = "lab:2026-09-06-model-bakeoff-nemotron35-lightning"
+notes = "No no-spec cell was run; backing out the ~1.2x speculation multiplier implies ~89 tok/s = 96% of roofline. NEXTN acceptance 0.65-0.85, 3.0-3.5 accepted. Prefill 4935.1 @4k / 3972.6 @96k. Cold start 426 s, MemAvailable after load 52.25 GiB. Coding eval 10/10 both modes (thinking-on costs 8.1x tokens). Bake-off winner on wall-per-task."
+
+[[run]]
+id = "2026-09-06-nemotron35-nvfp4-sglang-nextn-c4"
+date = "2026-09-06"
+model = "nemotron-3.5-lightning-30b-a3b"
+checkpoint = "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4 @ cc84af2f"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 21.56
+active_gb_per_token = 2.01
+active_gb_method = "fraction"
+speculation = "nextn"
+concurrency = 4
+decode_tok_s = 210.3
+decode_per_stream_tok_s = 56.1
+source = "lab:2026-09-06-model-bakeoff-nemotron35-lightning"
+
+[[run]]
+id = "2026-09-06-qwen3-coder-next-nvfp4-sglang-c1"
+date = "2026-09-06"
+model = "qwen3-coder-next-80b-a3b"
+checkpoint = "RedHatAI/Qwen3-Coder-Next-NVFP4 @ 27a8f16f (47,566,688,792 B), llm-compressor requant, no MTP head"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 47.57
+active_gb_per_token = 1.66
+active_gb_method = "fraction"
+speculation = "none"
+concurrency = 1
+decode_tok_s = 35.8
+prefill_tok_s = 4750.3
+prefill_prompt_tokens = 29010
+config = "--mem-fraction-static 0.50"
+source = "lab:2026-09-06-model-bakeoff-qwen3-coder-next"
+notes = "THE UNDER-PERFORMER: 32% of roofline on a third-party requant (not ModelOpt/native). Dequant-compute-bound suspect; cause not dug. Prefill is fine (4812 @4k / 3480 @96k) — only decode is off. Coding eval 10/10."
+
+[[run]]
+id = "2026-09-06-qwen3-coder-next-nvfp4-sglang-c4"
+date = "2026-09-06"
+model = "qwen3-coder-next-80b-a3b"
+checkpoint = "RedHatAI/Qwen3-Coder-Next-NVFP4 @ 27a8f16f"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 47.57
+active_gb_per_token = 1.66
+active_gb_method = "fraction"
+speculation = "none"
+concurrency = 4
+decode_tok_s = 119.9
+decode_per_stream_tok_s = 31.6
+source = "lab:2026-09-06-model-bakeoff-qwen3-coder-next"
+
+[[run]]
+id = "2026-09-06-laguna-s-nvfp4-sglang-c1"
+date = "2026-09-06"
+model = "laguna-s-2.1-118b-a8b"
+checkpoint = "poolside/Laguna-S-2.1-NVFP4 @ 07614121b318 (71,916,714,120 B), no DFlash"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 71.92
+active_gb_per_token = 4.54
+active_gb_method = "fraction"
+speculation = "none"
+concurrency = 1
+decode_tok_s = 18.3
+prefill_tok_s = 2447.1
+prefill_prompt_tokens = 29010
+config = "--mem-fraction-static 0.65"
+source = "lab:2026-09-06-model-bakeoff-laguna-s"
+notes = "44% of roofline, engine-independent (vLLM cell 19.6). SGLang's KV pool caps usable context at ~29.8k tokens at this fraction; 96k prefill failed x3. c4 32.9 aggregate / 14.0 per stream."
+
+[[run]]
+id = "2026-09-06-laguna-s-nvfp4-vllm-c1"
+date = "2026-09-06"
+model = "laguna-s-2.1-118b-a8b"
+checkpoint = "poolside/Laguna-S-2.1-NVFP4 @ 07614121b318, no DFlash"
+hardware = "gb10"
+engine = "vllm"
+engine_version = "v0.28.0 (upstream image)"
+quant = "NVFP4"
+checkpoint_gb = 71.92
+active_gb_per_token = 4.54
+active_gb_method = "fraction"
+speculation = "none"
+concurrency = 1
+decode_tok_s = 19.6
+prefill_tok_s = 2859.1
+prefill_prompt_tokens = 29010
+config = "--gpu-memory-utilization 0.65"
+source = "lab:2026-09-06-model-bakeoff-engine-comparisons"
+notes = "Engine-comparison cell. Prefill 3010.3 @4k / 2224.6 @96k (96k ran clean — no KV cap on vLLM at this fraction). Cold start 563 s. c4 41.7 aggregate / 15.7 per stream. Compare the 2026-08-23 row: DFlash takes this same checkpoint from ~19 to 50.6."
+
+[[run]]
+id = "2026-09-06-mistral-small-4-nvfp4-vllm-c1"
+date = "2026-09-06"
+model = "mistral-small-4-119b"
+checkpoint = "mistralai/Mistral-Small-4-119B-2603-NVFP4 @ b1a90485 (70,808,028,368 B), MLA + expert Linears NVFP4, rest BF16"
+hardware = "gb10"
+engine = "vllm"
+engine_version = "v0.28.0 (upstream image)"
+quant = "NVFP4"
+checkpoint_gb = 70.81
+speculation = "none"
+concurrency = 1
+decode_tok_s = 31.6
+prefill_tok_s = 2494.0
+prefill_prompt_tokens = 29010
+config = "--gpu-memory-utilization 0.65, --attention-backend TRITON_MLA"
+source = "lab:2026-09-06-model-bakeoff-mistral-small-4"
+notes = "Reviewer estimate 78-96% of roofline (no active-param figure derived, so no % here). Prefill 3328.3 @4k / 1247.3 @96k. c4 71.0 aggregate / 21.2 per stream. SGLang v0.5.18 loads this checkpoint then dies on a triton MLA kernel shape mismatch on GB10 — vLLM-only."
+
+# ───────────────────────────── 2026-09-07 fan-out on the production resident (SGLang, NEXTN, 512-token cell)
+
+[[run]]
+id = "2026-09-07-nemotron35-nvfp4-sglang-nextn-c8"
+date = "2026-09-07"
+model = "nemotron-3.5-lightning-30b-a3b"
+checkpoint = "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4 @ cc84af2f"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 21.56
+active_gb_per_token = 2.01
+active_gb_method = "fraction"
+speculation = "nextn"
+concurrency = 8
+decode_tok_s = 290.0
+config = "--max-running-requests 16 (was 4: capped aggregate at ~205 from c4 up, TTFT 4.7 s @c8)"
+source = "lab:2026-09-07-coder-max-running-16"
+notes = "THE CONFIG CHANGE: raising max running requests 4 -> 16 took c16 from ~205 to 405 aggregate and TTFT from 15 s to 0.24 s, at -9% KV pool. 60-min c8 soak: 1,497 ok / 0 err."
+
+[[run]]
+id = "2026-09-07-nemotron35-nvfp4-sglang-nextn-c16"
+date = "2026-09-07"
+model = "nemotron-3.5-lightning-30b-a3b"
+checkpoint = "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4 @ cc84af2f"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 21.56
+active_gb_per_token = 2.01
+active_gb_method = "fraction"
+speculation = "nextn"
+concurrency = 16
+decode_tok_s = 405.5
+decode_per_stream_tok_s = 26.4
+config = "--max-running-requests 16"
+source = "lab:2026-09-07-coder-max-running-16"
+notes = "TTFT 0.24 s. An identical uncapped run on the second box: c8 302 / c16 398."
+
+[[run]]
+id = "2026-09-07-nemotron35-nvfp4-sglang-nextn-dp2-c16"
+date = "2026-09-07"
+model = "nemotron-3.5-lightning-30b-a3b"
+checkpoint = "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4 @ cc84af2f"
+hardware = "gb10"
+nodes = 2
+parallelism = "DP=2 (independent replicas, client-side split)"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 21.56
+active_gb_per_token = 2.01
+active_gb_method = "fraction"
+speculation = "nextn"
+concurrency = 16
+decode_tok_s = 419.0
+source = "lab:2026-09-07-phase4-dp2-control-arm"
+notes = "DP=2 control arm: 418 @c8 / 419 @c16 — i.e. no gain over one uncapped box at c16 (405) because a single box already saturates at 16 streams; the win is that both boxes' streams are independent (no coupling). Beat TP=2 MiniMax-M2.7 2.3x aggregate / 4.7x per stream."
+
+# ───────────────────────────── 2026-09-07 two-box TP=2 over 200G (MiniMax-M2.7)
+
+[[run]]
+id = "2026-09-07-minimax-m27-awq-vllm-tp2-c1"
+date = "2026-09-07"
+model = "minimax-m2.7-230b-a10b"
+checkpoint = "cyankiwi/MiniMax-M2.7-AWQ-4bit @ 70ed6a57 (130,495,823,656 B)"
+hardware = "gb10"
+nodes = 2
+parallelism = "TP=2 over 200G RoCE"
+engine = "vllm"
+engine_version = "v0.28.0 (upstream image)"
+quant = "AWQ-int4-g32 + fp8 KV"
+checkpoint_gb = 130.50
+active_gb_per_token = 5.92
+active_gb_method = "arch"
+speculation = "none"
+concurrency = 1
+decode_tok_s = 41.9
+prefill_tok_s = 2486.0
+prefill_prompt_tokens = 28600
+config = "--gpu-memory-utilization 0.72, ctx 196608, fp8 KV, FlashInfer, CUDA graphs, PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True (load-bearing)"
+source = "lab:2026-09-07-phase4-m27-candidate-and-download"
+notes = "Median of 3 on a 512-token coding prompt. Ships 3 MTP modules but vLLM 0.28.0 has no M2 MTP class, so this is plain decode. Two-box roofline 63.2 -> 66%; 1.33x the SINGLE-box roofline. Fabric < 1 Gb/s during decode: cross-node decode is allreduce-latency-bound, not bandwidth-bound. Prefill 3218 @3.6k / 1458 @85.9k. Cannot fit one box (121.5 GB weights on a 121.7 GiB machine). Two independent third-party 2x-Spark rigs published 39.4 and 38.3 on the same checkpoint."
+
+[[run]]
+id = "2026-09-07-minimax-m27-awq-vllm-tp2-c16"
+date = "2026-09-07"
+model = "minimax-m2.7-230b-a10b"
+checkpoint = "cyankiwi/MiniMax-M2.7-AWQ-4bit @ 70ed6a57"
+hardware = "gb10"
+nodes = 2
+parallelism = "TP=2 over 200G RoCE"
+engine = "vllm"
+engine_version = "v0.28.0 (upstream image)"
+quant = "AWQ-int4-g32 + fp8 KV"
+checkpoint_gb = 130.50
+active_gb_per_token = 5.92
+active_gb_method = "arch"
+speculation = "none"
+concurrency = 16
+decode_tok_s = 184.0
+decode_per_stream_tok_s = 11.6
+source = "lab:2026-09-07-phase4-m27-candidate-and-download"
+notes = "Fan-out curve: c1 41.9 / c4 93 / c8 122 / c16 184."
+
+# ───────────────────────────── 2026-09-08 co-residency (llama.cpp beside a resident SGLang server)
+
+[[run]]
+id = "2026-09-08-qwen36-heretic-q8-llamacpp-coresident-c1"
+date = "2026-09-08"
+model = "qwen3.6-35b-a3b"
+checkpoint = "Qwen3.6-35B-A3B heretic Q8_0 GGUF, native MTP head preserved"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "v0.3.0 native (llama-swap)"
+quant = "Q8_0"
+checkpoint_gb = 36.0
+active_gb_per_token = 3.196
+active_gb_method = "arch"
+speculation = "draft-mtp"
+concurrency = 1
+decode_tok_s = 68.1
+config = "-c 16384, thinking off; co-resident with SGLang serving nemotron35 at mem-fraction 0.35"
+source = "lab:2026-09-08-heretic-cotenant"
+notes = "86-token sample. Matches the solo 69.1 (2026-08-19): an idle co-tenant costs nothing on decode. MemAvailable with both resident 30.0-30.7 GiB. Cold load beside a resident model 87 s vs ~25-30 s into an empty box."
+
+# ───────────────────────────── 2026-09-10 long-context decode (production resident, ctx raised 131072 -> 524288)
+
+[[run]]
+id = "2026-09-10-nemotron35-nvfp4-sglang-nextn-ctx1k-c1"
+date = "2026-09-10"
+model = "nemotron-3.5-lightning-30b-a3b"
+checkpoint = "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4 @ cc84af2f"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 21.56
+active_gb_per_token = 2.01
+active_gb_method = "fraction"
+speculation = "nextn"
+concurrency = 1
+decode_tok_s = 116.6
+context_tokens = 1013
+config = "--context-length 524288, --max-running-requests 16, >=1,100 output tokens forced"
+source = "lab:2026-09-10-coder-context-131k-to-524k"
+notes = "Retention curve vs context: 1k 116.6 / 51k 119.0 / 152k 105.3 / 254k 99.7 / 399k 82.0. Only 6 of 52 layers are attention, which is why the curve is this flat. Raising the context limit cost no memory."
+
+[[run]]
+id = "2026-09-10-nemotron35-nvfp4-sglang-nextn-ctx152k-c1"
+date = "2026-09-10"
+model = "nemotron-3.5-lightning-30b-a3b"
+checkpoint = "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4 @ cc84af2f"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 21.56
+active_gb_per_token = 2.01
+active_gb_method = "fraction"
+speculation = "nextn"
+concurrency = 1
+decode_tok_s = 105.3
+context_tokens = 152505
+config = "--context-length 524288"
+source = "lab:2026-09-10-coder-context-131k-to-524k"
+
+[[run]]
+id = "2026-09-10-nemotron35-nvfp4-sglang-nextn-ctx254k-c1"
+date = "2026-09-10"
+model = "nemotron-3.5-lightning-30b-a3b"
+checkpoint = "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4 @ cc84af2f"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 21.56
+active_gb_per_token = 2.01
+active_gb_method = "fraction"
+speculation = "nextn"
+concurrency = 1
+decode_tok_s = 99.7
+context_tokens = 254145
+config = "--context-length 524288"
+source = "lab:2026-09-10-coder-context-131k-to-524k"
+
+[[run]]
+id = "2026-09-10-nemotron35-nvfp4-sglang-nextn-ctx399k-c1"
+date = "2026-09-10"
+model = "nemotron-3.5-lightning-30b-a3b"
+checkpoint = "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4 @ cc84af2f"
+hardware = "gb10"
+engine = "sglang"
+engine_version = "v0.5.18-cu130"
+quant = "NVFP4 + fp8 KV"
+checkpoint_gb = 21.56
+active_gb_per_token = 2.01
+active_gb_method = "fraction"
+speculation = "nextn"
+concurrency = 1
+decode_tok_s = 82.0
+context_tokens = 399345
+config = "--context-length 524288"
+source = "lab:2026-09-10-coder-context-131k-to-524k"
+notes = "Retrieval verified at 399,348 tokens. Cold prefill of the 400k prompt took 187 s. The falloff is accelerating (-14 pts 254k->400k vs -4 pts 152k->254k)."
+
+# ───────────────────────────── 2026-05-22 early llama.cpp reference (older build, driver 580.142; random prompts)
+
+[[run]]
+id = "2026-05-22-nemotron3-nano-q8-llamacpp-c1"
+date = "2026-05-22"
+model = "nemotron-3-nano-30b-a3b"
+checkpoint = "Nemotron-3-Nano-30B-A3B Q8_0 GGUF"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "2026-05 build"
+quant = "Q8_0"
+speculation = "none"
+concurrency = 1
+decode_tok_s = 38.8
+source = "lab:2026-05-22-sglang-vs-llamacpp"
+notes = "Early build; no active-GB derivation, so no roofline %. c4 48.1 / c16 71.3 random prompts; c16 with a shared prefix 87.8 (+23%) — llama.cpp's prompt cache already captures most of the prefix-reuse win."
+
+[[run]]
+id = "2026-05-22-nemotron3-nano-q8-llamacpp-c16"
+date = "2026-05-22"
+model = "nemotron-3-nano-30b-a3b"
+checkpoint = "Nemotron-3-Nano-30B-A3B Q8_0 GGUF"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "2026-05 build"
+quant = "Q8_0"
+speculation = "none"
+concurrency = 16
+decode_tok_s = 71.3
+config = "--parallel 16 --cont-batching, random prompts"
+source = "lab:2026-05-22-sglang-vs-llamacpp"
+
+[[run]]
+id = "2026-05-22-gpt-oss-120b-mxfp4-llamacpp-c1"
+date = "2026-05-22"
+model = "gpt-oss-120b"
+checkpoint = "gpt-oss-120b MXFP4 GGUF"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "2026-05 build"
+quant = "MXFP4"
+speculation = "none"
+concurrency = 1
+decode_tok_s = 40.6
+source = "lab:2026-05-22-sglang-vs-llamacpp"
+notes = "c4 50.0 / c16 84.0 random prompts; c16 shared prefix 158.9 (~1.9x)."
+
+[[run]]
+id = "2026-05-22-gpt-oss-120b-mxfp4-llamacpp-c16"
+date = "2026-05-22"
+model = "gpt-oss-120b"
+checkpoint = "gpt-oss-120b MXFP4 GGUF"
+hardware = "gb10"
+engine = "llama.cpp"
+engine_version = "2026-05 build"
+quant = "MXFP4"
+speculation = "none"
+concurrency = 16
+decode_tok_s = 84.0
+config = "--parallel 16 --cont-batching, random prompts"
+source = "lab:2026-05-22-sglang-vs-llamacpp"

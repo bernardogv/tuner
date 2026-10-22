@@ -1,0 +1,11 @@
+{
+  "schema_version": 3,
+  "notes": "(p) Same as (o) but tg@0 50.0 -> 48.45 = -3.1%, just past guard 3.0: guard_regression naming tg@0 and its delta, even though the objective pp@0 gained 10% cleanly.",
+  "thresholds": { "kld_margin": 0.02, "same_top_margin_pct": 3.0, "control_kld_cap": 0.2, "noise_k": 2.0, "min_samples": 3 },
+  "workload": { "objective": { "metric": "pp", "depth": 0 } },
+  "repeats": 3,
+  "control": { "mean_kld": 0.035, "same_top_pct": 87.0 },
+  "baseline": { "samples": [{"pp_tok_s": 995.0, "tg_tok_s": 50.0}, {"pp_tok_s": 1000.0, "tg_tok_s": 50.0}, {"pp_tok_s": 1005.0, "tg_tok_s": 50.0}] },
+  "candidate": { "samples": [{"pp_tok_s": 1095.0, "tg_tok_s": 48.45}, {"pp_tok_s": 1100.0, "tg_tok_s": 48.45}, {"pp_tok_s": 1105.0, "tg_tok_s": 48.45}], "kld": {"mean_kld": 0.035, "same_top_pct": 87.0}, "failure": null, "identical_to_baseline": false },
+  "expect": { "verdict": "reject", "reason_kind": "guard_regression", "detail_contains": "tg@0 -3.1% < -3.0%" }
+}

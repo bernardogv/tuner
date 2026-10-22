@@ -1,0 +1,56 @@
+# Bytes per parameter by storage format. `bytes_per_param` covers attention, shared experts and
+# the output head; `expert_bytes_per_param` covers routed experts. The router stays F32 (llama.cpp
+# keeps ffn_gate_inp unquantized) and is counted separately by the calculator.
+# Ids match the `quant` strings used in benchmarks/data/runs/.
+
+[[quant]]
+id = "BF16"
+bytes_per_param = 2.0
+expert_bytes_per_param = 2.0
+
+[[quant]]
+id = "FP8"
+bytes_per_param = 1.0
+expert_bytes_per_param = 1.0
+
+[[quant]]
+id = "Q8_0"
+bytes_per_param = 1.0625
+expert_bytes_per_param = 1.0625
+notes = "8-bit block of 32 + f16 scale = 8.5 bits"
+
+[[quant]]
+id = "Q4_K_M"
+bytes_per_param = 0.6
+expert_bytes_per_param = 0.6
+notes = "Mixed Q4_K/Q6_K, ~4.8 bits average"
+
+[[quant]]
+id = "NVFP4"
+bytes_per_param = 0.5625
+expert_bytes_per_param = 0.5625
+notes = "4-bit block of 16 + e4m3 scale = 4.5 bits, everything quantized"
+
+[[quant]]
+id = "NVFP4-RTN-experts"
+bytes_per_param = 1.0625
+expert_bytes_per_param = 0.5625
+notes = "llama-quantize NVFP4 on routed experts only, attention left Q8_0"
+
+[[quant]]
+id = "MXFP4"
+bytes_per_param = 0.53125
+expert_bytes_per_param = 0.53125
+notes = "4-bit block of 32 + e8m0 scale = 4.25 bits"
+
+[[quant]]
+id = "AWQ-int4-g32"
+bytes_per_param = 0.625
+expert_bytes_per_param = 0.625
+notes = "4 bits + f16 scale and zero per 32 = 5 bits"
+
+[[quant]]
+id = "APEX-mixed"
+bytes_per_param = 1.0625
+expert_bytes_per_param = 0.258
+notes = "Per-checkpoint mixed IQ quant; expert rate is IQ2_XXS (2.06 bits), fitted to the casebook's 2.393 GB/token, not derived from a format"

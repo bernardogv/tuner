@@ -1,0 +1,10 @@
+{
+  "schema_version": 3,
+  "notes": "(i) +3% with +-0.5% noise, n=5: the gate is about noise, not a fixed % threshold; lower bound 1.60-2*0.14 > 0, keep.",
+  "thresholds": { "kld_margin": 0.02, "same_top_margin_pct": 3.0, "control_kld_cap": 0.2, "noise_k": 2.0, "min_samples": 3 },
+  "repeats": 5,
+  "control": { "mean_kld": 0.035, "same_top_pct": 87.0 },
+  "baseline": { "samples": [{"pp_tok_s": 1080.0, "tg_tok_s": 53.7}, {"pp_tok_s": 1081.0, "tg_tok_s": 53.9}, {"pp_tok_s": 1082.0, "tg_tok_s": 54.0}, {"pp_tok_s": 1083.0, "tg_tok_s": 54.1}, {"pp_tok_s": 1084.0, "tg_tok_s": 54.3}] },
+  "candidate": { "samples": [{"pp_tok_s": 1100.0, "tg_tok_s": 55.3}, {"pp_tok_s": 1101.0, "tg_tok_s": 55.5}, {"pp_tok_s": 1102.0, "tg_tok_s": 55.6}, {"pp_tok_s": 1103.0, "tg_tok_s": 55.7}, {"pp_tok_s": 1104.0, "tg_tok_s": 55.9}], "kld": {"mean_kld": 0.035, "same_top_pct": 87.0}, "failure": null, "identical_to_baseline": false },
+  "expect": { "verdict": "keep", "reason_kind": "cleared" }
+}
